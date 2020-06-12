@@ -1,0 +1,31 @@
+create table usr (
+  id serial primary key,
+  first_name varchar(50) not null,
+  last_name varchar(50) not null,
+  login varchar(50) not null,
+  hash_password varchar(100) not null,
+  role varchar(20) not null
+);
+
+create table club (
+  id serial primary key,
+  title varchar(50) not null ,
+  description varchar(500),
+  owner_id integer,
+  constraint fk_owner_id foreign key (owner_id) references usr(id) on delete cascade
+);
+
+create table usrs_clubs (
+  user_id integer not null,
+  club_id integer not null,
+  primary key (user_id, club_id),
+  constraint fk_user_id foreign key (user_id) references usr(id),
+  constraint fk_club_id foreign key (club_id) references club(id)
+);
+
+create table token (
+  id serial primary key,
+  value varchar(100),
+  owner_id integer,
+  constraint fk_owner_id foreign key (owner_id) references usr(id) on delete cascade
+);
