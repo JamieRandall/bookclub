@@ -1,5 +1,7 @@
 package ru.club.controllers;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,7 @@ public class SignUpController {
     private SignUpService signUpService;
 
     @PostMapping("/signup")
+    @ApiOperation(value = "Sign up")
     public ResponseEntity<Object> singUp(@RequestBody SignUpForm signUpForm) {
         Integer status = signUpService.signUp(signUpForm);
         ResponseEntity<Object> entity;

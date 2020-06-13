@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - postgres-data:/data
+    ports:
+      - 5432:5432
+    env_file:
+      - database.env
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres-data:

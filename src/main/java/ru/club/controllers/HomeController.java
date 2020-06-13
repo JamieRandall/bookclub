@@ -2,6 +2,7 @@ package ru.club.controllers;
 
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class HomeController {
     private HomeService homeService;
 
     @GetMapping
-    @ApiOperation(value = "Get profile homepage")
+    @ApiOperation(value = "Get profile homepage", authorizations = { @Authorization(value="token") })
     public ResponseEntity<UserProfileDto> getMyProfile(@RequestParam(name = "token") String token) {
         Optional<UserProfileDto> dto = homeService.getProfileInfo(token);
         ResponseEntity entity;
@@ -34,7 +35,7 @@ public class HomeController {
     }
 
     @GetMapping("/myclubs")
-    @ApiOperation(value = "Get clubs that i own")
+    @ApiOperation(value = "Get clubs that i own", authorizations = { @Authorization(value="token") })
     public PageAsList<ClubDto> getMyClubs(
             @RequestParam(name = "page") Integer page,
             @RequestParam(value = "size") Integer size,
@@ -45,7 +46,7 @@ public class HomeController {
     }
 
     @PostMapping("/myclubs/{title}/create")
-    @ApiOperation(value = "Create new club")
+    @ApiOperation(value = "Create new club", authorizations = { @Authorization(value="token") })
     public ResponseEntity<Object> createNewClub(
             @RequestParam(value = "token") String token,
             @PathVariable(value = "title") String title) {

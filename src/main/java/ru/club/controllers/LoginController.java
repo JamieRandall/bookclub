@@ -1,6 +1,7 @@
 package ru.club.controllers;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,7 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
-    @ApiOperation(value = "My App Service get test1 API", position = 1)
+    @ApiOperation(value = "Login")
     @PostMapping("/login")
     public ResponseEntity<TokenDto> login(@RequestBody LoginForm loginForm){
         return ResponseEntity.ok(loginService.login(loginForm));
