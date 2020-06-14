@@ -5,12 +5,11 @@ import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.club.adapters.PageAsList;
+import ru.club.decorators.PageMutable;
 import ru.club.models.Club;
 import ru.club.models.User;
 import ru.club.services.ClubsService;
 import ru.club.transfer.club.ClubDto;
-import ru.club.transfer.club.ClubMemberDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +22,7 @@ public class ClubsController {
 
     @GetMapping
     @ApiOperation(value = "Show clubs list", authorizations = { @Authorization(value="token") })
-    public PageAsList<ClubDto> showClubs(@RequestParam Integer page, @RequestParam Integer size) {
+    public PageMutable<ClubDto> showClubs(@RequestParam Integer page, @RequestParam Integer size) {
         return clubsService.paginationFindAll(page,size);
     }
 

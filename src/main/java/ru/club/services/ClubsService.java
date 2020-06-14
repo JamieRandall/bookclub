@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.club.adapters.PageAsList;
+import ru.club.decorators.PageMutable;
 import ru.club.models.Club;
 import ru.club.models.User;
 import ru.club.repositories.ClubsRepository;
@@ -28,9 +29,14 @@ public class ClubsService {
         return  clubsRepository.findAll();
     }
 
-    public PageAsList<ClubDto> paginationFindAll(Integer page, Integer size) {
+    public PageMutable<ClubDto> paginationFindAll(Integer page, Integer size) {
         Pageable certainPage = new PageRequest(page, size);
-        return ClubDto.getDtosListFromPage(clubsRepository.findAll(certainPage));
+        Page<Club> clubs = clubsRepository.findAll(certainPage);
+        PageMutable<Club> mutableClubs = new PageMutable<>();
+        mutableClubs.createFromPage(clubs);
+
+
+        return ClubDto.changeInnerListToDto(mutableClubs);
     }
 
 //    public PageAsList<ClubMemberDto> paginationFindAllMembersOfClub(Integer page, Integer size, String title) {

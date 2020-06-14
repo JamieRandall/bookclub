@@ -19,7 +19,8 @@ public class TokenAuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
 
-        String token = req.getHeader("Authorization");
+//        String token = req.getHeader("Authorization");
+        String token = req.getHeader("token");
 
         TokenAuthentification authentification = new TokenAuthentification(token);
 
