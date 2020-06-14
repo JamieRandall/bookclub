@@ -1,6 +1,7 @@
 package ru.club.controllers;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class UsersController {
     private UsersService usersService;
 
     @GetMapping
+    @ApiOperation(value = "", authorizations = { @Authorization(value="token") })
     public Page<User> paginationGetUsers(
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "size", required = false) Integer size) {
@@ -31,18 +33,20 @@ public class UsersController {
     }
 
     @GetMapping("/findall")
+    @ApiOperation(value = "", authorizations = { @Authorization(value="token") })
     public List<User> getUsers() {
 
         return usersService.findAll();
     }
 
     @PostMapping("/add")
+    @ApiOperation(value = "", authorizations = { @Authorization(value="token") })
     public ResponseEntity<Object> signUp(@RequestBody UserForm userForm) {
         usersService.signUp(userForm);
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation(value = "Get certain user info by login")
+    @ApiOperation(value = "Get certain user info by login", authorizations = { @Authorization(value="token") })
     @GetMapping("/{login}")
     public ResponseEntity<UserPageDto> getUserPage(@PathVariable(name = "login") String login) {
         Optional<UserPageDto> userCandidate = usersService.findUserByLogin(login);
