@@ -3,6 +3,7 @@ package ru.club.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.club.exception.UserAlreadyExistsException;
 import ru.club.forms.SignUpForm;
 import ru.club.models.Role;
 import ru.club.models.User;
@@ -16,8 +17,7 @@ public class SignUpService {
     private PasswordEncoder passwordEncoder;
 
 
-    public Integer signUp(SignUpForm signUpForm) {
-        Integer status;
+    public Long signUp(SignUpForm signUpForm) {
 
         if (!usersRepository.findOneByLogin(signUpForm.getLogin()).isPresent()) {
             User user = User.builder()
@@ -28,13 +28,10 @@ public class SignUpService {
                     .role(Role.USER)
                     .build();
             usersRepository.save(user);
-            //Created
-            status = 201;
-        } else {
-            //Conflict: resource already exists
-            status = 409;
+
+            return usersRepository.findOneByLogin(signUpForm.getLogin()).get().getId();
         }
 
-        return status;
+        throw new UserAlreadyExistsException();
     }
 }

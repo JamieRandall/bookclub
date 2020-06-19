@@ -2,6 +2,7 @@ package ru.club.transfer.club;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.domain.Page;
 import ru.club.decorators.PageMutable;
 import ru.club.models.Club;
 import ru.club.models.User;
@@ -17,9 +18,23 @@ public class ClubDto {
     private String ownerLogin;
     private List<String> members;
 
-    public static PageMutable<ClubDto> changeInnerListToDto(PageMutable<Club> clubs) {
+    public static ClubDto fromClub(Club club) {
+        List<String> memberLogins = new ArrayList<>();
+
+        for (User member : club.getMembers())
+            memberLogins.add(member.getLogin());
+
+        return ClubDto.builder()
+                .description(club.getDescription())
+                .title(club.getTitle())
+                .ownerLogin(club.getOwner().getLogin())
+                .members(memberLogins)
+                .build();
+    }
+
+    public static PageMutable<ClubDto> createMutableDtoPage(Page<Club> clubs) {
         List<ClubDto> innerList = new ArrayList<>();
-        for (Club club : clubs.getInnerList()) {
+        for (Club club : clubs) {
             List<String> memberLogins = new ArrayList<>();
 
             for (User member : club.getMembers()) {
@@ -33,6 +48,6 @@ public class ClubDto {
                     .build());
         }
 
-        return new PageMutable<>(innerList, clubs.getTotalPages(), clubs.getTotalElements());
+        return new PageMutable(innerList, clubs.getTotalPages(), clubs.getTotalElements(), clubs.getSort());
     }
 }

@@ -46,4 +46,10 @@ public class User {
             mappedBy = "owner"
     )
     private List<Token> tokens;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL
+    )
+    private List<Request> requests;
 }

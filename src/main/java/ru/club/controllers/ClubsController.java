@@ -6,13 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.club.decorators.PageMutable;
-import ru.club.models.Club;
-import ru.club.models.User;
+import ru.club.forms.ClubForm;
 import ru.club.services.ClubsService;
+import ru.club.transfer.RequestDto;
 import ru.club.transfer.club.ClubDto;
 
-import java.util.List;
-import java.util.Optional;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/clubs")
@@ -22,22 +21,16 @@ public class ClubsController {
 
     @GetMapping
     @ApiOperation(value = "Show clubs list", authorizations = { @Authorization(value="token") })
-    public PageMutable<ClubDto> showClubs(@RequestParam Integer page, @RequestParam Integer size) {
-        return clubsService.paginationFindAll(page,size);
+    public ResponseEntity<PageMutable<ClubDto>> paginationGetClubs(
+            @RequestParam Integer page,
+            @RequestParam Integer size) {
+        return ResponseEntity.ok(clubsService.paginationFindAll(page,size));
     }
 
-    @GetMapping("/{title}")
+    @GetMapping("/{id}")
     @ApiOperation(value = "Show club by title", authorizations = { @Authorization(value="token") })
-    public ResponseEntity<ClubDto> showCertainClub(@PathVariable(value = "title") String title) {
-        Optional<Club> clubCandidate = clubsService.findClubByTitle(title);
-        ResponseEntity entity;
-        if (clubCandidate.isPresent()) {
-            entity = ResponseEntity.ok(clubCandidate.get());
-        } else {
-            entity = ResponseEntity.status(404).body("Not found");
-        }
-
-        return entity;
+    public ResponseEntity<ClubDto> getCertainClub(@PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(clubsService.findClubById(id));
     }
 
 //    @GetMapping("/{title}/members")
@@ -51,12 +44,49 @@ public class ClubsController {
 //        return new PageAsList<>();
 //    }
 
-    @GetMapping("/{title}/members")
-    @ApiOperation(value = "Show members of certain club", authorizations = { @Authorization(value="token") })
-    public List<User> showCertainClubMembers(
-            @PathVariable(value = "title") String title) {
+    @GetMapping("/owned-by/{user-id}")
+    @ApiOperation(value = "Show clubs owned by certain user", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<PageMutable<ClubDto>> getClubsOwnedByUser(
+            @RequestParam Integer page,
+            @RequestParam Integer size,
+            @PathVariable(value = "user-id") Long userId) {
 
 
-        return clubsService.getUsersByClubTitle(title);
+        return ResponseEntity.ok(clubsService.getClubsOwnedByUser(userId, page, size));
     }
+
+    @GetMapping("/has-user/{user-id}")
+    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<PageMutable<ClubDto>> getClubsUserParticipate(
+            @RequestParam Integer page,
+            @RequestParam Integer size,
+            @PathVariable(value = "user-id") Long userId) {
+
+
+        return ResponseEntity.ok(clubsService.getClubsUserParticipate(userId, page, size));
+    }
+
+    @PostMapping("/create")
+    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> createClub(
+            @RequestParam (name = "token") String token,
+            @RequestBody ClubForm clubForm) {
+        Long newClubId = clubsService.createClub(clubForm, token);
+        URI uri = URI.create("/clubs/" + newClubId);
+
+        return ResponseEntity.created(uri).build();
+    }
+
+    @PostMapping("/{club-id}/join")
+    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> joinClub(
+            @RequestParam (name = "token") String token,
+            @PathVariable (value = "club-id") Long clubId) {
+        clubsService.joinClub(clubId, token);
+        URI uri = URI.create("/clubs/" + clubId);
+
+        return ResponseEntity.created(uri).body("Request's sent");
+    }
+
+
 }

@@ -25,4 +25,10 @@ public class Club {
 
     @ManyToMany(mappedBy = "clubs")
     private List<User> members;
+
+    @OneToMany(
+            mappedBy = "club",
+            cascade = CascadeType.ALL
+    )
+    private List<Request> requests;
 }
