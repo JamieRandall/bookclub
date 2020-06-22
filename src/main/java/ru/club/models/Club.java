@@ -19,11 +19,16 @@ public class Club {
     private String title;
     private String description;
 
+    @Enumerated(value = EnumType.STRING)
+    private State state;
+
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @ManyToMany(mappedBy = "clubs")
+    @ManyToMany(
+            mappedBy = "clubs",
+            cascade = CascadeType.PERSIST)
     private List<User> members;
 
     @OneToMany(

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.club.decorators.PageMutable;
 import ru.club.forms.ClubForm;
+import ru.club.forms.RequestForm;
 import ru.club.services.ClubsService;
 import ru.club.transfer.RequestDto;
 import ru.club.transfer.club.ClubDto;
@@ -56,7 +57,7 @@ public class ClubsController {
     }
 
     @GetMapping("/has-user/{user-id}")
-    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
+    @ApiOperation(value = "Show clubs that has certain user as a member", authorizations = { @Authorization(value="token") })
     public ResponseEntity<PageMutable<ClubDto>> getClubsUserParticipate(
             @RequestParam Integer page,
             @RequestParam Integer size,
@@ -67,7 +68,7 @@ public class ClubsController {
     }
 
     @PostMapping("/create")
-    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
+    @ApiOperation(value = "Create new club", authorizations = { @Authorization(value="token") })
     public ResponseEntity<Object> createClub(
             @RequestParam (name = "token") String token,
             @RequestBody ClubForm clubForm) {
@@ -77,16 +78,48 @@ public class ClubsController {
         return ResponseEntity.created(uri).build();
     }
 
-    @PostMapping("/{club-id}/join")
-    @ApiOperation(value = "Show clubs that has certain user as member", authorizations = { @Authorization(value="token") })
-    public ResponseEntity<Object> joinClub(
+    @DeleteMapping("/{club-id}/delete")
+    @ApiOperation(value = "Delete the club", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> deleteClub(
             @RequestParam (name = "token") String token,
             @PathVariable (value = "club-id") Long clubId) {
-        clubsService.joinClub(clubId, token);
+        clubsService.deleteClub(clubId, token);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{club-id}/recover")
+    @ApiOperation(value = "Recover deleted club", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> recoverClub(
+            @RequestParam (name = "token") String token,
+            @PathVariable (value = "club-id") Long clubId) {
+        clubsService.recoverClub(clubId, token);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{club-id}/join")
+    @ApiOperation(value = "Leave a request to join certain club", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> joinClub(
+            @RequestParam (name = "token") String token,
+            @PathVariable (value = "club-id") Long clubId,
+            @RequestBody RequestForm requestForm) {
+        clubsService.joinClub(clubId, token, requestForm);
         URI uri = URI.create("/clubs/" + clubId);
 
         return ResponseEntity.created(uri).body("Request's sent");
     }
+
+    @DeleteMapping("/{club-id}/leave")
+    @ApiOperation(value = "Leave the club", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> leaveClub(
+            @RequestParam (name = "token") String token,
+            @PathVariable (value = "club-id") Long clubId) {
+        clubsService.leaveClub(clubId, token);
+
+        return ResponseEntity.ok().build();
+    }
+
 
 
 }

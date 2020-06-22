@@ -22,6 +22,12 @@ public class LoginService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * Generates and returns token connected to user
+     * @param loginForm - contains login and password
+     * @return token value as dto
+     * @throws IllegalArgumentException - if user with such login and password does not exist
+     */
     public TokenDto login(LoginForm loginForm) {
         Optional<User> userCandidate = usersRepository.findOneByLogin(loginForm.getLogin());
 

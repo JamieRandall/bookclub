@@ -27,4 +27,6 @@ public class Request {
 
     @Enumerated(value = EnumType.STRING)
     private RequestStatus status;
+
+    private String coverLetter;
 }

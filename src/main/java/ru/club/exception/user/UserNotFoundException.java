@@ -1,4 +1,4 @@
-package ru.club.exception;
+package ru.club.exception.user;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

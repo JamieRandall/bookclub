@@ -7,7 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.club.exception.*;
+import ru.club.exception.club.AlreadyMemberException;
+import ru.club.exception.club.ClubAlreadyExistsException;
+import ru.club.exception.club.ClubNotFoundException;
+import ru.club.exception.club.NotMemberException;
+import ru.club.exception.common.ForbiddenException;
+import ru.club.exception.request.RequestAlreadyExistsException;
+import ru.club.exception.request.RequestNotFoundException;
+import ru.club.exception.user.UserAlreadyExistsException;
+import ru.club.exception.user.UserNotFoundException;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -33,7 +41,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    protected ResponseEntity<JSONException> handleUserbAlreadyExistsException() {
+    protected ResponseEntity<JSONException> handleUserAlreadyExistsException() {
         JSONException exception = new JSONException("User with this login already exists");
 
         return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
@@ -58,6 +66,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         JSONException exception = new JSONException("User is already member of this club");
 
         return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(RequestAlreadyExistsException.class)
+    protected ResponseEntity<JSONException> handleRequestAlreadyExistsException() {
+        JSONException exception = new JSONException("Request from this user already exists");
+
+        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(NotMemberException.class)
+    protected ResponseEntity<JSONException> handleNotMemberException() {
+        JSONException exception = new JSONException("User is not a member");
+
+        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
     }
 
     @Data
