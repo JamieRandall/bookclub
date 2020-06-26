@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.club.forms.LoginForm;
+import ru.club.forms.SignUpForm;
 import ru.club.models.Token;
 import ru.club.models.User;
 import ru.club.repositories.TokensRepository;

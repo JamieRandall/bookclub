@@ -3,9 +3,10 @@ package ru.club.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.club.exception.user.UserAlreadyExistsException;
+import ru.club.exception.EntityAlreadyExistsException;
 import ru.club.forms.SignUpForm;
 import ru.club.models.Role;
+import ru.club.models.State;
 import ru.club.models.User;
 import ru.club.repositories.UsersRepository;
 
@@ -21,7 +22,7 @@ public class SignUpService {
      * Saves new user to database
      * @param signUpForm - contains diverse parameters of user profile
      * @return id of new user
-     * @throws UserAlreadyExistsException - if user with this login already exists
+     * @throws EntityAlreadyExistsException - if user with this login already exists
      */
     public Long signUp(SignUpForm signUpForm) {
 
@@ -32,12 +33,14 @@ public class SignUpService {
                     .lastName(signUpForm.getLastName())
                     .hashPassword(passwordEncoder.encode(signUpForm.getPassword()))
                     .role(Role.USER)
+                    .email(signUpForm.getEmail())
+                    .state(State.ACTIVE)
                     .build();
             usersRepository.save(user);
 
             return usersRepository.findOneByLogin(signUpForm.getLogin()).get().getId();
         }
 
-        throw new UserAlreadyExistsException();
+        throw new EntityAlreadyExistsException("User with this login already exists");
     }
 }

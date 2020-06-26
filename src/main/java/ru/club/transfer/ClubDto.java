@@ -1,11 +1,11 @@
-package ru.club.transfer.club;
+package ru.club.transfer;
 
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.domain.Page;
 import ru.club.decorators.PageMutable;
 import ru.club.models.Club;
-import ru.club.models.User;
+import ru.club.models.RequestStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,38 +13,45 @@ import java.util.List;
 @Data
 @Builder
 public class ClubDto {
+    private Long id;
     private String title;
     private String description;
     private String ownerLogin;
-    private List<String> members;
+    private String userStatus;
+    private List<UserDto> members;
 
-    public static ClubDto fromClub(Club club) {
-        List<String> memberLogins = new ArrayList<>();
-
-        for (User member : club.getMembers())
-            memberLogins.add(member.getLogin());
-
+    public static ClubDto getClubDto(Club club, String requestStatus) {
         return ClubDto.builder()
+                .id(club.getId())
                 .description(club.getDescription())
                 .title(club.getTitle())
                 .ownerLogin(club.getOwner().getLogin())
-                .members(memberLogins)
+                .members(UserDto.getMembersListDto(club.getMembers()))
+                .userStatus(requestStatus)
                 .build();
+    }
+
+    public static List<ClubDto> getClubShortDtoList(List<Club> clubs) {
+        List<ClubDto> dtos = new ArrayList<>();
+
+        for (Club club : clubs) {
+            dtos.add(ClubDto.builder()
+            .id(club.getId())
+            .title(club.getTitle())
+            .build());
+        }
+
+        return dtos;
     }
 
     public static PageMutable<ClubDto> createMutableDtoPage(Page<Club> clubs) {
         List<ClubDto> innerList = new ArrayList<>();
         for (Club club : clubs) {
-            List<String> memberLogins = new ArrayList<>();
-
-            for (User member : club.getMembers()) {
-                memberLogins.add(member.getLogin());
-            }
             innerList.add(ClubDto.builder()
                     .ownerLogin(club.getOwner().getLogin())
                     .title(club.getTitle())
                     .description(club.getDescription())
-                    .members(memberLogins)
+                    .members(UserDto.getMembersListDto(club.getMembers()))
                     .build());
         }
 

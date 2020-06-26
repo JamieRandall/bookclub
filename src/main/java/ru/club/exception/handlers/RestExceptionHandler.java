@@ -2,84 +2,62 @@ package ru.club.exception.handlers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.club.exception.club.AlreadyMemberException;
-import ru.club.exception.club.ClubAlreadyExistsException;
-import ru.club.exception.club.ClubNotFoundException;
-import ru.club.exception.club.NotMemberException;
-import ru.club.exception.common.ForbiddenException;
-import ru.club.exception.request.RequestAlreadyExistsException;
-import ru.club.exception.request.RequestNotFoundException;
-import ru.club.exception.user.UserAlreadyExistsException;
-import ru.club.exception.user.UserNotFoundException;
+import ru.club.exception.EntityAlreadyExistsException;
+import ru.club.exception.EntityNotFoundException;
+import ru.club.exception.ForbiddenException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(UserNotFoundException.class)
-    protected ResponseEntity<JSONException> handleUserNotFoundException(){
-        JSONException exception = new JSONException("User not found");
-
-        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(ClubNotFoundException.class)
-    protected ResponseEntity<JSONException> handleClubNotFoundException() {
-        JSONException exception = new JSONException("Club not found");
-
-        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(ClubAlreadyExistsException.class)
-    protected ResponseEntity<JSONException> handleClubAlreadyExistsException() {
-        JSONException exception = new JSONException("Club with this title already exists");
-
-        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    protected ResponseEntity<JSONException> handleUserAlreadyExistsException() {
-        JSONException exception = new JSONException("User with this login already exists");
-
-        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
-    }
-
     @ExceptionHandler(ForbiddenException.class)
-    protected ResponseEntity<JSONException> handleForbiddenException() {
-        JSONException exception = new JSONException("Forbidden");
+    protected ResponseEntity<JSONException> handleForbiddenException(ForbiddenException ex) {
+        JSONException exception = new JSONException(ex.getMessage());
 
         return new ResponseEntity<>(exception, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(RequestNotFoundException.class)
-    protected ResponseEntity<JSONException> handleRequestNotFoundException() {
-        JSONException exception = new JSONException("Request not found");
+    @ExceptionHandler(EntityNotFoundException.class)
+    protected ResponseEntity<JSONException> handleEntityNotFoundException(EntityNotFoundException ex) {
+        JSONException exception = new JSONException(ex.getMessage());
 
         return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(AlreadyMemberException.class)
-    protected ResponseEntity<JSONException> handleAlreadyMemberException() {
-        JSONException exception = new JSONException("User is already member of this club");
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    protected ResponseEntity<JSONException> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex) {
+        JSONException exception = new JSONException(ex.getMessage());
 
         return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(RequestAlreadyExistsException.class)
-    protected ResponseEntity<JSONException> handleRequestAlreadyExistsException() {
-        JSONException exception = new JSONException("Request from this user already exists");
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatus status,
+            WebRequest request) {
+        List<String> errors = new ArrayList<String>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        }
+        for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
+            errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
+        }
 
-        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(NotMemberException.class)
-    protected ResponseEntity<JSONException> handleNotMemberException() {
-        JSONException exception = new JSONException("User is not a member");
-
-        return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
+        return handleExceptionInternal(
+                ex, "VALIDATION ERROR" ,headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @Data

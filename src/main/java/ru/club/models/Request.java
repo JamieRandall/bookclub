@@ -26,6 +26,7 @@ public class Request {
     private User user;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
     private RequestStatus status;
 
     private String coverLetter;

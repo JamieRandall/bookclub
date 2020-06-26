@@ -6,9 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.club.decorators.PageMutable;
-import ru.club.exception.club.ClubNotFoundException;
-import ru.club.exception.common.ForbiddenException;
-import ru.club.exception.request.RequestNotFoundException;
+import ru.club.exception.EntityNotFoundException;
+import ru.club.exception.ForbiddenException;
 import ru.club.models.*;
 import ru.club.repositories.ClubsRepository;
 import ru.club.repositories.RequestsRepository;
@@ -36,7 +35,7 @@ public class RequestsService {
      * @param size - size of elements on single page (for pagination)
      * @param token - user identifier
      * @return list of NEW requests as dto
-     * @throws RequestNotFoundException - if there are no requests on this page (or at all)
+     * @throws EntityNotFoundException - if there are no requests on this page (or at all)
      */
     public PageMutable<RequestDto> getJoinRequests(Long clubId, Integer page, Integer size, String token) {
         this.accessCheck(clubId, token);
@@ -45,7 +44,7 @@ public class RequestsService {
         Page<Request> requests = requestsRepository.findAllByClub_IdAndStatus(clubId, RequestStatus.NEW , certainPage);
 
         if (requests.getContent().isEmpty())
-            throw new RequestNotFoundException();
+            throw new EntityNotFoundException("Requests not found");
 
         return RequestDto.createMutableDtoPage(requests);
 
@@ -58,16 +57,16 @@ public class RequestsService {
      * @param requestId - id of the request
      * @param token - user identifier
      * @return id of user whom request method applies
-     * @throws RequestNotFoundException - if request with this id does not exist
+     * @throws EntityNotFoundException - if request with this id does not exist
      * @throws ForbiddenException - if someone tries to apply not NEW request (DECLINED OR ACCEPTED)
      */
     public Long applyRequest(Long requestId, String token) {
         Optional<Request> requestCandidate = requestsRepository.findOneById(requestId);
 
         if (!requestCandidate.isPresent())
-            throw new RequestNotFoundException();
+            throw new EntityNotFoundException("Request not found");
         if (!requestCandidate.get().getStatus().equals(RequestStatus.NEW))
-            throw new ForbiddenException();
+            throw new ForbiddenException("Forbidden. Request has already been handled");
 
         Request request = requestCandidate.get();
         Club club = requestCandidate.get().getClub();
@@ -89,7 +88,7 @@ public class RequestsService {
      * Manages access check to verify authorities
      * @param requestId - id of the request
      * @param token - user identifier
-     * @throws RequestNotFoundException - if request with this id does not exist
+     * @throws EntityNotFoundException - if request with this id does not exist
      * @throws ForbiddenException - if someone tries to decline not NEW request (DECLINED OR ACCEPTED)
      */
     public void declineRequest(Long requestId, String token) {
@@ -98,9 +97,9 @@ public class RequestsService {
         Optional<Request> requestCandidate = requestsRepository.findOneById(requestId);
 
         if (!requestCandidate.isPresent())
-            throw new RequestNotFoundException();
+            throw new EntityNotFoundException("Request not found");
         if (!requestCandidate.get().getStatus().equals(RequestStatus.NEW))
-            throw new ForbiddenException();
+            throw new ForbiddenException("Forbidden. Request has already been handled");
 
         this.accessCheck(requestCandidate.get().getClub().getId(), token);
 
@@ -117,7 +116,7 @@ public class RequestsService {
      * @param clubId - id of club requests are connected to
      * @param token - user identifier
      * @throws ForbiddenException - if token is not valid
-     * @throws ClubNotFoundException if club does not exist
+     * @throws EntityNotFoundException if club does not exist
      * @throws ForbiddenException - if user is now owner of the club
      */
     private void accessCheck(Long clubId, String token) {
@@ -125,10 +124,10 @@ public class RequestsService {
         Optional<Club> clubCandidate = clubsRepository.findOneById(clubId);
 
         if (!tokenCandidate.isPresent())
-            throw new ForbiddenException();
+            throw new ForbiddenException("Forbidden. Token is not valid");
         if (!clubCandidate.isPresent())
-            throw new ClubNotFoundException();
+            throw new EntityNotFoundException("Club not found");
         if (!tokenCandidate.get().getOwner().getOwnedClubs().contains(clubCandidate.get()))
-            throw new ForbiddenException();
+            throw new ForbiddenException("Forbidden. User is not owner");
     }
 }

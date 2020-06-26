@@ -16,10 +16,12 @@ public class Club {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String title;
     private String description;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
     private State state;
 
     @ManyToOne

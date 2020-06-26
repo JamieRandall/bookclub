@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.club.forms.SignUpForm;
 import ru.club.services.SignUpService;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
@@ -19,7 +20,7 @@ public class SignUpController {
 
     @PostMapping("/signup")
     @ApiOperation(value = "Sign up")
-    public ResponseEntity<Object> singUp(@RequestBody SignUpForm signUpForm) {
+    public ResponseEntity<Object> singUp(@RequestBody @Valid SignUpForm signUpForm) {
         Long id = signUpService.signUp(signUpForm);
         URI uri = URI.create("/users/" + id);
 

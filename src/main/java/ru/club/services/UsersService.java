@@ -6,9 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.club.decorators.PageMutable;
-import ru.club.exception.club.ClubNotFoundException;
-import ru.club.exception.common.ForbiddenException;
-import ru.club.exception.user.UserNotFoundException;
+import ru.club.exception.EntityNotFoundException;
+import ru.club.exception.ForbiddenException;
 import ru.club.forms.UserChangeForm;
 import ru.club.models.Club;
 import ru.club.models.Role;
@@ -17,8 +16,7 @@ import ru.club.models.User;
 import ru.club.repositories.ClubsRepository;
 import ru.club.repositories.TokensRepository;
 import ru.club.repositories.UsersRepository;
-import ru.club.transfer.user.UserPageDto;
-import ru.club.transfer.user.UserProfileDto;
+import ru.club.transfer.UserDto;
 
 import java.util.Optional;
 
@@ -33,53 +31,53 @@ public class UsersService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public PageMutable<UserPageDto> paginationFindAll(Integer page, Integer size) {
+    public PageMutable<UserDto> paginationFindAll(Integer page, Integer size) {
         Pageable certainPage = new PageRequest(page, size);
 
-        return UserPageDto.createMutableDtoPage(usersRepository.findAll(certainPage));
+        return UserDto.createMutableDtoPage(usersRepository.findAll(certainPage));
     }
 
-    public UserPageDto findUserByLogin(String login) {
+    public UserDto findUserByLogin(String login) {
         Optional<User> userCandidate = usersRepository.findOneByLogin(login);
         if (userCandidate.isPresent()) {
-            return UserPageDto.fromUser(userCandidate.get());
+            return UserDto.getUserDto(userCandidate.get());
         }
 
-        throw new UserNotFoundException();
+        throw new EntityNotFoundException("User not found");
     }
 
     /**
      * Returns info of certain user
      * @param id - user id
      * @return user info as dto
-     * @throws UserNotFoundException - if user with this id is not present
+     * @throws EntityNotFoundException - if user with this id is not present
      */
-    public UserPageDto findUserById(Long id) {
+    public UserDto findUserById(Long id) {
         Optional<User> userCandidate = usersRepository.findOneById(id);
 
         if (userCandidate.isPresent()) {
-            return UserPageDto.fromUser(userCandidate.get());
+            return UserDto.getUserDto(userCandidate.get());
         }
 
-        throw new UserNotFoundException();
+        throw new EntityNotFoundException("User not found");
     }
 
     /**
      * Returns extended info of user connected with current token
      * @param tokenValue - user identifier
      * @return extended info of user as dto
-     * @throws UserNotFoundException - if token is not valid
+     * @throws EntityNotFoundException - if token is not valid
      */
-    public UserProfileDto getMyPage(String tokenValue) {
+    public UserDto getMyPage(String tokenValue) {
         Optional<Token> tokenCandidate = tokensRepository.findOneByValue(tokenValue);
 
         //Return user connected to token, if it exists
         //In another way, throws exception
         if (tokenCandidate.isPresent()) {
-            return UserProfileDto.fromUser(tokenCandidate.get().getOwner());
+            return UserDto.getUserDto(tokenCandidate.get().getOwner());
         }
 
-        throw new UserNotFoundException();
+        throw new EntityNotFoundException("User not found");
     }
 
     /**
@@ -88,16 +86,16 @@ public class UsersService {
      * @param page - number of page (for pagination)
      * @param size - size of elements on single page (for pagination)
      * @return list of users as dto
-     * @throws ClubNotFoundException - if club with this id is not present
+     * @throws EntityNotFoundException - if club with this id is not present
      */
-    public PageMutable<UserPageDto> getMembersOfClub(Long clubId, Integer page, Integer size) {
+    public PageMutable<UserDto> getMembersOfClub(Long clubId, Integer page, Integer size) {
         Pageable certainPage = new PageRequest(page, size);
         Optional<Club> clubCandidate = clubsRepository.findOneById(clubId);
 
         if (!clubCandidate.isPresent())
-            throw new ClubNotFoundException();
+            throw new EntityNotFoundException("Clubs not found");
 
-        return UserPageDto.createMutableDtoPage(usersRepository.findAllByClubs_id(clubId, certainPage));
+        return UserDto.createMutableDtoPage(usersRepository.findAllByClubs_id(clubId, certainPage));
     }
 
     /**
@@ -105,7 +103,7 @@ public class UsersService {
      * @param userChangeForm - variety of new parameters for user profile
      * @param userId - user id
      * @param tokenValue - user identifier
-     * @throws UserNotFoundException - if user with this id is not present
+     * @throws EntityNotFoundException - if user with this id is not present
      * @throws ForbiddenException - if token belongs to another user (but changes can be made by ADMIN)
      */
     public void changeUser(UserChangeForm userChangeForm, Long userId, String tokenValue) {
@@ -115,9 +113,9 @@ public class UsersService {
         //If user wants to change another profile, and he is not ADMIN
         //Throw exception
         if (!usersRepository.findOneById(userId).isPresent())
-            throw new UserNotFoundException();
+            throw new EntityNotFoundException("User not found");
         if ((tokenCandidate.get().getOwner().getId() != userId) && (!tokenCandidate.get().getOwner().getRole().equals(Role.ADMIN)))
-            throw new ForbiddenException();
+            throw new ForbiddenException("Forbidden");
 
 
         User user = usersRepository.findOneById(userId).get();

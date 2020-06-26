@@ -20,7 +20,7 @@ public class RequestsController {
     @GetMapping("/{club-id}")
     @ApiOperation(value = "Show all join requests of certain club", authorizations = { @Authorization(value="token") })
     public ResponseEntity<PageMutable<RequestDto>> getJoinRequests(
-            @RequestParam(name = "token") String token,
+            @RequestHeader(name = "token") String token,
             @RequestParam Integer page,
             @RequestParam Integer size,
             @PathVariable(value = "club-id") Long clubId) {
@@ -32,7 +32,7 @@ public class RequestsController {
     @PostMapping("/{request-id}")
     @ApiOperation(value = "Apply certain request of club, returns applied user", authorizations = { @Authorization(value="token") })
     public ResponseEntity<Object> applyRequest(
-            @RequestParam(name = "token") String token,
+            @RequestHeader (name = "token") String token,
             @PathVariable(value = "request-id") Long requestId) {
 
         Long userId = requestsService.applyRequest(requestId, token);
@@ -44,7 +44,7 @@ public class RequestsController {
     @DeleteMapping("/{request-id}")
     @ApiOperation(value = "Decline certain request of club", authorizations = { @Authorization(value="token") })
     public ResponseEntity<Object> declineRequest(
-            @RequestParam(name = "token") String token,
+            @RequestHeader (name = "token") String token,
             @PathVariable(value = "request-id") Long requestId) {
 
         requestsService.declineRequest(requestId, token);
