@@ -15,6 +15,7 @@ import ru.club.models.*;
 import ru.club.repositories.ClubsRepository;
 import ru.club.repositories.RequestsRepository;
 import ru.club.repositories.TokensRepository;
+import ru.club.repositories.UsersRepository;
 import ru.club.transfer.ClubDto;
 
 import java.util.Optional;
@@ -27,6 +28,8 @@ public class ClubsService {
     private RequestsRepository requestsRepository;
     @Autowired
     private TokensRepository tokensRepository;
+    @Autowired
+    private UsersRepository usersRepository;
 
     /**
      * Returns list of all clubs. Uses pagination
@@ -247,5 +250,37 @@ public class ClubsService {
         club.setState(State.ACTIVE);
 
         clubsRepository.save(club);
+    }
+
+    /**
+     * Changes info of the club
+     * @param clubForm - contains new title and description
+     * @param clubId - id of the club
+     * @param token - user identifier
+     * @throws EntityNotFoundException - if club with this id does not exist/ if user with this token does not exist
+     * @throws ForbiddenException - if token belongs to user who does not own the club (but changes can be made by ADMIN)
+     */
+    public void changeClub(ClubForm clubForm, Long clubId, String token) {
+        Optional<Token> tokenCandidate = tokensRepository.findOneByValue(token);
+        Optional<Club> clubCandidate = clubsRepository.findOneById(clubId);
+
+        if (!clubCandidate.isPresent())
+            throw new EntityNotFoundException("Club not found");
+
+        //If user wants to change another profile, and he is not ADMIN
+        //Throw exception
+        if (!usersRepository.findOneById(tokenCandidate.get().getOwner().getId()).isPresent())
+            throw new EntityNotFoundException("User not found");
+        if ((tokenCandidate.get().getOwner().getId() != clubCandidate.get().getOwner().getId())
+                && (!tokenCandidate.get().getOwner().getRole().equals(Role.ADMIN)))
+            throw new ForbiddenException("Forbidden");
+
+
+        Club club = clubCandidate.get();
+
+        String title = (clubForm.getTitle() == null) ? club.getTitle() : clubForm.getTitle();
+        String description = (clubForm.getDescription() == null) ? club.getDescription() : clubForm.getDescription();
+
+        clubsRepository.setClubInfoById(clubId, title, description);
     }
 }

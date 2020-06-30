@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.club.decorators.PageMutable;
 import ru.club.exception.EntityNotFoundException;
 import ru.club.exception.ForbiddenException;
@@ -18,6 +19,8 @@ import ru.club.repositories.TokensRepository;
 import ru.club.repositories.UsersRepository;
 import ru.club.transfer.UserDto;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -129,12 +132,12 @@ public class UsersService {
         usersRepository.setUserInfoById(userId, firstName, lastName, login, hashPassword, role.toString());
     }
 
-    public void test() {
-        User user = usersRepository.findOneById((long) 2).get();
-        Club club = clubsRepository.findOneById((long) 2).get();
-        user.getClubs().add(club);
-
-        usersRepository.save(user);
+    public void uploadPhoto(MultipartFile file, Long userId, String token) {
+        String fileName = file.getOriginalFilename();
+        try {
+            file.transferTo(new File(fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 }

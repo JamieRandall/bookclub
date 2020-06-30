@@ -5,7 +5,9 @@ import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.club.decorators.PageMutable;
+import ru.club.exception.EntityNotFoundException;
 import ru.club.forms.UserChangeForm;
 import ru.club.services.UsersService;
 import ru.club.transfer.UserDto;
@@ -61,6 +63,19 @@ public class UsersController {
         usersService.changeUser(userChangeForm, userId, token);
 
         return ResponseEntity.ok("User has been changed");
+
+    }
+
+    @ApiOperation(value = "Upload user's photo", authorizations = { @Authorization(value="token") })
+    @PostMapping("/{user-id}/uploadPhoto")
+    public ResponseEntity<Object> uploadPhoto(
+            @RequestBody MultipartFile file,
+            @RequestHeader (name = "token") String token,
+            @PathVariable(name = "user-id") Long userId) {
+
+        usersService.uploadPhoto(file, userId, token);
+
+        return ResponseEntity.ok("Photo has been uploaded");
 
     }
 }

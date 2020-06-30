@@ -15,7 +15,11 @@ import java.util.Optional;
 public interface UsersRepository extends JpaRepository<User, Long> {
     Optional<User> findOneByLogin(String login);
 
+    Optional<User> findOneByEmail(String email);
+
     Optional<User> findOneById(Long id);
+
+    Optional<User> findOneByActivationCode(String code);
 
 //    Page<User> findAllByClubs_title(String title, Pageable pageable);
 

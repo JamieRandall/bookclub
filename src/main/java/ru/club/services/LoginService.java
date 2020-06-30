@@ -2,8 +2,10 @@ package ru.club.services;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.club.exception.EntityNotFoundException;
 import ru.club.forms.LoginForm;
 import ru.club.forms.SignUpForm;
 import ru.club.models.Token;
@@ -22,6 +24,8 @@ public class LoginService {
     private TokensRepository tokensRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Value("${secret.word}")
+    private String secret;
 
     /**
      * Generates and returns token connected to user
@@ -36,16 +40,17 @@ public class LoginService {
             User user = userCandidate.get();
 
             if (passwordEncoder.matches(loginForm.getPassword(), user.getHashPassword())) {
-                Token token = Token.builder()
-                        .value(RandomStringUtils.random(10, true, true))
-                        .owner(user)
-                        .build();
+//                Token token = Token.builder()
+//                        .value(RandomStringUtils.random(10, true, true))
+//                        .owner(user)
+//                        .build();
+                Token token = Token.getJWT(user, secret);
 
                 tokensRepository.save(token);
 
                 return new TokenDto(token);
             }
-        } throw new IllegalArgumentException("User not found");
+        } throw new EntityNotFoundException("User not found");
 
     }
 }

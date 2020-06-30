@@ -110,6 +110,18 @@ public class ClubsController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{club-id}/change")
+    @ApiOperation(value = "Change info of certain club", authorizations = { @Authorization(value="token") })
+    public ResponseEntity<Object> changeClub(
+            @RequestBody ClubForm clubForm,
+            @RequestHeader (name = "token") String token,
+            @PathVariable (value = "club-id") Long clubId) {
+
+        clubsService.changeClub(clubForm, clubId, token);
+
+        return ResponseEntity.ok("Club has been changed");
+    }
+
 
 
 }

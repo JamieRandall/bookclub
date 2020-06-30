@@ -41,6 +41,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "activation_code")
+    private String activationCode;
+
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "usrs_clubs",

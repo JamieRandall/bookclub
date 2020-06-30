@@ -24,4 +24,9 @@ public interface ClubsRepository extends JpaRepository<Club, Long> {
     @Query(value = "DELETE FROM usrs_clubs WHERE user_id = ?1 AND club_id = ?2", nativeQuery = true)
     void deleteMemberByIdAndClubId(Long userId, Long clubId);
 
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE club SET title = ?2, description = ?3 WHERE id = ?1", nativeQuery = true)
+    void setClubInfoById(Long id, String title, String description);
+
 }
