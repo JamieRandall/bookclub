@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.club.forms.SignUpForm;
+import ru.club.forms.UserChangeForm;
+import ru.club.forms.UserForm;
 import ru.club.services.MailSender;
 import ru.club.services.SignUpService;
 import ru.club.transfer.UserDto;
@@ -34,6 +36,24 @@ public class SignUpController {
     public ResponseEntity<UserDto> confirmSignUp(@PathVariable (name = "code") String code) {
 
         UserDto dto = signUpService.confirmSignUp(code);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/recover")
+    @ApiOperation(value = "Access recovery")
+    public ResponseEntity<Object> recoverAccess(@RequestBody SignUpForm signUpForm) {
+        signUpService.recoverAccess(signUpForm);
+
+        return ResponseEntity.status(201).build();
+    }
+
+    @PostMapping("/recover/{code}")
+    @ApiOperation(value = "Sign up confirmation")
+    public ResponseEntity<UserDto> confirmRecovery(@PathVariable (name = "code") String code,
+                                                   @RequestBody @Valid UserChangeForm userChangeForm) {
+
+        UserDto dto = signUpService.confirmRecovery(code, userChangeForm);
 
         return ResponseEntity.ok(dto);
     }

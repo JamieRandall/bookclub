@@ -6,7 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.club.exception.EntityAlreadyExistsException;
 import ru.club.exception.EntityNotFoundException;
+import ru.club.exception.ForbiddenException;
 import ru.club.forms.SignUpForm;
+import ru.club.forms.UserChangeForm;
 import ru.club.models.Role;
 import ru.club.models.State;
 import ru.club.models.User;
@@ -25,7 +27,7 @@ public class SignUpService {
     @Autowired
     private MailSender mailSender;
 
-    private static final boolean EMAIL_SIGNUP_ENABLED = true;
+    private static final boolean EMAIL_SIGNUP_ENABLED = false;
 
 
     /**
@@ -79,8 +81,8 @@ public class SignUpService {
             usersRepository.save(user);
 
             String emailMessage = String.format("Hello, %s!\n" +
-            "You have to follow the next link to activate your account at Book Club!\n" +
-            "http://localhost:8081/signup/confirm/%s", user.getLogin(), user.getActivationCode());
+                    "You have to follow the next link to activate your account at Book Club!\n" +
+                    "http://localhost:8081/signup/confirm/%s", user.getLogin(), user.getActivationCode());
 
             mailSender.sendMail(user.getEmail(), "Activate your account!", emailMessage);
 
@@ -102,6 +104,44 @@ public class SignUpService {
 
                 return UserDto.getUserDto(user);
             }
+        }
+
+        throw new EntityNotFoundException("Wrong activation code");
+    }
+
+    public void recoverAccess(SignUpForm signUpForm) {
+        Optional<User> userCandidate = usersRepository.findOneByEmail(signUpForm.getEmail().toLowerCase());
+
+        if (userCandidate.isPresent()) {
+            User user = userCandidate.get();
+            user.setActivationCode(UUID.randomUUID().toString());
+            usersRepository.save(user);
+
+            String emailMessage = String.format("Hello, %s!\n" +
+                    "You are trying to recover access to your account. " +
+                    "Follow the link to change your password.\n\n" +
+                    "http://localhost:8081/signup/recover/%s", user.getLogin(), user.getActivationCode());
+
+            mailSender.sendMail(user.getEmail(), "Access recovery", emailMessage);
+        } else {
+            throw new EntityNotFoundException("User does not exist");
+        }
+    }
+
+    public UserDto confirmRecovery(String code, UserChangeForm userChangeForm) {
+        Optional<User> userCandidate = usersRepository.findOneByActivationCode(code);
+
+        if (userCandidate.isPresent()) {
+            User user = userCandidate.get();
+            if (user.getState().equals(State.ACTIVE)) {
+                user.setActivationCode(null);
+                user.setHashPassword(passwordEncoder.encode(userChangeForm.getPassword()));
+                usersRepository.save(user);
+
+                return UserDto.getUserDto(user);
+            }
+
+            throw new ForbiddenException("User is not active");
         }
 
         throw new EntityNotFoundException("Wrong activation code");

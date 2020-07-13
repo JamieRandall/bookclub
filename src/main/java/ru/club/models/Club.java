@@ -3,6 +3,7 @@ package ru.club.models;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
@@ -22,6 +23,7 @@ public class Club {
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
+    @NotNull
     private State state;
 
     @ManyToOne

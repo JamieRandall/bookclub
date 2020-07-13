@@ -44,6 +44,8 @@ public class User {
     @Column(name = "activation_code")
     private String activationCode;
 
+    private String ufid;
+
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "usrs_clubs",

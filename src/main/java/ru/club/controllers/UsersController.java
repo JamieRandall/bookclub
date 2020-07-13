@@ -69,11 +69,11 @@ public class UsersController {
     @ApiOperation(value = "Upload user's photo", authorizations = { @Authorization(value="token") })
     @PostMapping("/{user-id}/uploadPhoto")
     public ResponseEntity<Object> uploadPhoto(
-            @RequestBody MultipartFile file,
+            @RequestParam(name = "photo") MultipartFile photo,
             @RequestHeader (name = "token") String token,
             @PathVariable(name = "user-id") Long userId) {
 
-        usersService.uploadPhoto(file, userId, token);
+        usersService.uploadPhoto(photo, userId, token);
 
         return ResponseEntity.ok("Photo has been uploaded");
 

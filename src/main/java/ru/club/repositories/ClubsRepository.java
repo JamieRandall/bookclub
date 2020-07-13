@@ -5,11 +5,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import ru.club.models.Club;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
 
+@Repository
 public interface ClubsRepository extends JpaRepository<Club, Long> {
     Optional<Club> findOneByTitle(String title);
 

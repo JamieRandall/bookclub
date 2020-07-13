@@ -6,12 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import ru.club.repositories.CloudRepository;
+import ru.club.repositories.PhotoRepository;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.*;
@@ -35,6 +34,10 @@ public class Application {
         return multipartResolver;
     }
 
+    @Bean
+    public CloudRepository cloudRepository() {
+        return new PhotoRepository();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -1,6 +1,7 @@
 package ru.club.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,13 +15,12 @@ import ru.club.models.Club;
 import ru.club.models.Role;
 import ru.club.models.Token;
 import ru.club.models.User;
+import ru.club.repositories.CloudRepository;
 import ru.club.repositories.ClubsRepository;
 import ru.club.repositories.TokensRepository;
 import ru.club.repositories.UsersRepository;
 import ru.club.transfer.UserDto;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -33,6 +33,10 @@ public class UsersService {
     private TokensRepository tokensRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CloudRepository cloudRepository;
+    @Value("${upload.path}")
+    private String uploadPath;
 
     public PageMutable<UserDto> paginationFindAll(Integer page, Integer size) {
         Pageable certainPage = new PageRequest(page, size);
@@ -133,11 +137,20 @@ public class UsersService {
     }
 
     public void uploadPhoto(MultipartFile file, Long userId, String token) {
-        String fileName = file.getOriginalFilename();
-        try {
-            file.transferTo(new File(fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
+        Optional<Token> tokenCandidate = tokensRepository.findOneByValue(token);
+
+        //If token is valid, and user tries to upload his photo (or he is ADMIN)
+        if (tokenCandidate.isPresent() && (tokenCandidate.get().getOwner().getId() == userId || tokenCandidate.get().getOwner().getRole().equals(Role.ADMIN))) {
+            Optional<User> userCandidate = usersRepository.findOneById(userId);
+            if (userCandidate.isPresent()) {
+                User user = userCandidate.get();
+                String entireFileName = cloudRepository.save(file);
+
+                user.setUfid(entireFileName);
+                usersRepository.save(user);
+            }
         }
+
+        throw new ForbiddenException("Forbidden");
     }
 }
