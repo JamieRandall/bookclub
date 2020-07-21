@@ -51,7 +51,7 @@ public class PhotoRepository implements CloudRepository {
                 String entireFileName = uploadPath + "/" + randomNose + "-" + file.getOriginalFilename();
 
                 file.transferTo(new File(entireFileName));
-
+                
                 return entireFileName;
             }
         } catch (IOException e) {
